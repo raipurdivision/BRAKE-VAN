@@ -1,0 +1,1102 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambush Brake Van Inspection Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, #b1d5e6 0%, #87ceeb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+            background: rgb(138,201,241);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            border-bottom: 4px solid #FFD700;
+            padding: 12px 20px;
+            position: relative;
+        }
+        .header-inner { display: flex; align-items: center; gap: 16px; }
+        .header-logo img { height: 80px; width: 80px; object-fit: contain; border-radius: 50%; border: 3px solid #FFD700; background: #fff; padding: 2px; }
+        .header-text { text-align: center; flex: 1; }
+        .header-text h1 { font-size: 1.5em; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 2px; }
+        .header-text h2 { font-size: 1em; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #FFD700; margin-top: 2px; }
+        .header-text h3 { font-size: 0.82em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #FFD700; opacity: 0.88; margin-top: 2px; }
+        .header-controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        .toggle-row { display: flex; align-items: center; gap: 6px; }
+        .toggle-label { color: #fff; font-size: 0.82em; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,.3); }
+
+        /* Mobile view overrides */
+        body.mobile-view .container { max-width: 100%; margin: 0; border-radius: 0; }
+        body.mobile-view { padding: 0; }
+        body.mobile-view .header-text h1 { font-size: 1.1em; }
+        body.mobile-view .header-inner { flex-direction: column; gap: 8px; }
+        body.mobile-view .form-container { padding: 10px; }
+        body.mobile-view .info-fields { flex-direction: column; gap: 8px; }
+        body.mobile-view .info-field { flex: 1 1 100% !important; }
+        body.mobile-view table { font-size: 9px; }
+        body.mobile-view th, body.mobile-view td { padding: 4px 2px; font-size: 9px; }
+        body.mobile-view input[type="text"], body.mobile-view input[type="time"],
+        body.mobile-view input[type="date"], body.mobile-view select,
+        body.mobile-view textarea { font-size: 10px; padding: 4px; }
+        body.mobile-view .button-group { flex-direction: column; gap: 8px; }
+        body.mobile-view button { width: 100%; padding: 9px 12px; font-size: 0.88em; }
+        body.mobile-view .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        body.mobile-view .dual-sig-section { flex-direction: column; gap: 12px; }
+
+        /* ── TOGGLE SWITCH ── */
+        .toggle-switch { position: relative; width: 50px; height: 26px; display: inline-block; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ffb366; transition: 0.4s; border-radius: 26px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: #2ecc71; }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .voice-status { color: white; font-size: 0.75em; font-weight: bold; min-width: 30px; }
+        .voice-indicator { display: none; color: white; font-size: 1.2em; animation: pulse 1.5s infinite; margin-left: 4px; }
+        .voice-indicator.listening { display: inline-flex; align-items: center; gap: 4px; }
+        .listening-text { font-size: 0.72em; font-weight: bold; color: #e74c3c; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.9; } }
+        @keyframes micPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* ── FORM CONTAINER ── */
+        .form-container { padding: 16px; background: #e4e7e7; }
+
+        .info-section {
+            background: rgb(212,220,218);
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        }
+
+        .info-section h2 {
+            font-size: 1em; font-weight: bold; color: #1a237e;
+            margin-bottom: 10px; text-align: center; text-transform: uppercase;
+            border-bottom: 2px solid #4a90e2; padding-bottom: 6px;
+        }
+
+        /* Compact 3-col grid */
+        .info-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            margin-bottom: 6px;
+        }
+        .info-field { flex: 1 1 180px; min-width: 140px; }
+        .info-field.full-width { flex: 1 1 100%; }
+        .info-field.half { flex: 1 1 46%; }
+        .info-field.third { flex: 1 1 30%; }
+
+        .info-field label {
+            display: block; font-weight: bold; margin-bottom: 3px;
+            color: #1a237e; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+        }
+
+        .info-field input, .info-field select {
+            width: 100%; padding: 5px 7px; border: 2px solid #b3d9ff;
+            border-radius: 5px; font-size: 11px; font-weight: bold;
+            background: white;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .info-field input:focus, .info-field select:focus {
+            outline: none; border-color: #4a90e2;
+            box-shadow: 0 0 6px rgba(74,144,226,0.35);
+        }
+
+        /* ── TABLES ── */
+        .table-wrapper {
+            overflow-x: auto; margin-bottom: 10px;
+            border-radius: 6px; box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        thead { background: linear-gradient(135deg, #1a237e 0%, #4a8ec2 100%); color: white; }
+        th { padding: 8px 6px; text-align: center; font-weight: bold; font-size: 11px; border: 2px solid #3a7ca5; text-transform: uppercase; }
+        tbody tr { transition: background-color 0.2s; }
+        tbody tr:nth-child(odd) { background-color: #f0f8ff; }
+        tbody tr:nth-child(even) { background-color: #ffffff; }
+        tbody tr:hover { background-color: #d4e9ff; }
+        td { padding: 5px 6px; border: 1px solid #b3d9ff; text-align: center; font-size: 11px; }
+        td:first-child { font-weight: bold; background-color: #e6f2ff; font-size: 11px; }
+        td.obs-cell { text-align: left; font-weight: bold; font-size: 11px; }
+
+        input[type="text"], textarea { text-transform: uppercase; }
+        input[type="text"], input[type="time"], input[type="date"],
+        input[type="file"], select, textarea {
+            width: 100%; padding: 4px 6px; border: 1px solid #b3d9ff;
+            border-radius: 4px; font-size: 11px; font-weight: bold;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]:focus, input[type="time"]:focus, input[type="date"]:focus,
+        select:focus, textarea:focus {
+            outline: none; border-color: #4a90e2;
+            box-shadow: 0 0 6px rgba(74,144,226,0.3);
+        }
+
+        /* ── REMARKS ── */
+        .remarks-section { margin-top: 10px; margin-bottom: 8px; }
+        .remarks-section label { display: block; font-weight: bold; margin-bottom: 3px; color: #1a237e; font-size: 11px; text-transform: uppercase; }
+        .remarks-section textarea { width: 100%; font-size: 11px; min-height: 48px; border: 2px solid #b3d9ff; overflow-y: hidden; resize: none; border-radius: 4px; }
+
+        /* ── DUAL SIGNATURE ── */
+        .dual-sig-section { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .sig-box {
+            flex: 1 1 45%;
+            background: white;
+            border: 2px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 3px 10px rgba(74,144,226,0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sig-box-title { font-size: 12px; font-weight: bold; color: #1a237e; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #4a90e2; padding-bottom: 5px; margin-bottom: 3px; }
+        .sig-box label { font-size: 11px; font-weight: bold; color: #2c3e50; margin-bottom: 2px; display: block; }
+        .sig-box select, .sig-box input[type="file"] { width: 100%; padding: 6px; border: 2px solid #b3d9ff; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        .sig-preview { display: none; margin-top: 5px; }
+        .sig-preview img { max-width: 160px; max-height: 70px; border: 2px solid #4a90e2; border-radius: 5px; display: block; }
+
+        /* ── BUTTONS ── */
+        .button-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+        button { padding: 10px 22px; font-size: 0.92em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .submit-btn { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; }
+        .submit-btn:hover { background: linear-gradient(135deg, #2980b9 0%, #21618c 100%); transform: translateY(-2px); }
+        .pdf-btn { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: white; }
+        .pdf-btn:hover { background: linear-gradient(135deg, #d35400 0%, #ba4a00 100%); transform: translateY(-2px); }
+        .save-draft-btn { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; }
+        .save-draft-btn:hover { background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%); transform: translateY(-2px); }
+        .upload-draft-btn { background: linear-gradient(135deg, #16a085 0%, #138d75 100%); color: white; }
+        .upload-draft-btn:hover { background: linear-gradient(135deg, #138d75 0%, #117a65 100%); transform: translateY(-2px); }
+        #draftFileInput { display: none; }
+
+        /* ── MESSAGE ── */
+        .message { display: none; width: 100%; padding: 12px 18px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1em; margin-bottom: 12px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); animation: fadeInSlide 0.25s ease; }
+        @keyframes fadeInSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .message.success { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+        .message.error   { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+        .message.warning { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+
+        /* ── ZOOM OVERLAY ── */
+        .zoom-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
+        .zoom-overlay.active { display: flex; }
+        .zoom-input-container { background: white; width: 90%; max-width: 500px; border-radius: 10px; padding: 18px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .zoom-input-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .zoom-input-title { font-size: 1.1em; font-weight: bold; color: #2c3e50; }
+        .zoom-close-btn { background: #e74c3c; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .zoom-close-btn:hover { background: #c0392b; }
+        .zoom-input { width: 100%; min-height: 130px; padding: 12px; font-size: 17px; border: 2px solid #4a90e2; border-radius: 8px; resize: vertical; }
+        .zoom-input:focus { outline: none; border-color: #357abd; }
+        .zoom-done-btn { width: 100%; margin-top: 12px; padding: 11px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; }
+        .zoom-done-btn:hover { background: #229954; }
+
+        @media (max-width: 768px) {
+            .header-text h1 { font-size: 1.1em; }
+            .header-inner { flex-direction: column; text-align: center; }
+            .header-controls { align-items: center; }
+            .button-group { flex-direction: column; }
+            button { width: 100%; }
+            .dual-sig-section { flex-direction: column; }
+            .sig-box { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Zoom Overlay -->
+<div class="zoom-overlay" id="zoomOverlay">
+    <div class="zoom-input-container">
+        <div class="zoom-input-header">
+            <span class="zoom-input-title" id="zoomTitle">Enter Text</span>
+            <button class="zoom-close-btn" onclick="closeZoomInput()">×</button>
+        </div>
+        <textarea class="zoom-input" id="zoomInput" placeholder="Type or speak here..."></textarea>
+        <button class="zoom-done-btn" onclick="closeZoomInput()">✓ Done</button>
+    </div>
+</div>
+
+<div class="container">
+    <!-- ── HEADER ── -->
+    <div class="header">
+        <div class="header-inner">
+            <div class="header-logo">
+                <img src="data:image/png;base64,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" alt="Indian Railways">
+            </div>
+            <div class="header-text">
+                <h1>Ambush Brake Van Inspection Report</h1>
+                <h2>Raipur Division — South East Central Railway</h2>
+                <h3>Brake Van (BV) Inspection Checklist</h3>
+            </div>
+            <div class="header-controls">
+                <div class="toggle-row">
+                    <span class="toggle-label">📱 Mobile</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="mobileToggle" onchange="toggleMobileView()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row">
+                    <span class="toggle-label">🎤 Voice</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="voiceToggle" onchange="toggleVoiceTyping()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="voice-status" id="voiceStatus">OFF</span>
+                    <span class="voice-indicator" id="voiceIndicator">
+                        <span>🎤</span><span class="listening-text">Listening</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── FORM ── -->
+    <div class="form-container">
+
+        <!-- ── SECTION 1: BASIC INFO (compact 4-col) ── -->
+        <div class="info-section">
+            <h2>Basic Information</h2>
+            <div class="info-fields">
+                <div class="info-field third">
+                    <label for="formDate">Date:</label>
+                    <input type="date" id="formDate">
+                </div>
+                <div class="info-field third">
+                    <label for="trainNo">Train No.:</label>
+                    <input type="text" id="trainNo" placeholder="TRAIN NO">
+                </div>
+                <div class="info-field third">
+                    <label for="load">Load:</label>
+                    <input type="text" id="load" placeholder="LOAD">
+                </div>
+                <div class="info-field third">
+                    <label for="slr">SLR:</label>
+                    <input type="text" id="slr" placeholder="SLR">
+                </div>
+                <div class="info-field third">
+                    <label for="bpcNo">BPC No.:</label>
+                    <input type="text" id="bpcNo" placeholder="BPC NO">
+                </div>
+                <div class="info-field third">
+                    <label for="issued">Issued:</label>
+                    <input type="text" id="issued" placeholder="ISSUED">
+                </div>
+                <div class="info-field third">
+                    <label for="issuedDate">Issued Date:</label>
+                    <input type="date" id="issuedDate">
+                </div>
+                <div class="info-field third">
+                    <label for="brpPercent">BR/P %:</label>
+                    <input type="text" id="brpPercent" placeholder="BR/P %">
+                </div>
+                <div class="info-field third">
+                    <label for="locoNumber">Loco Number:</label>
+                    <input type="text" id="locoNumber" placeholder="LOCO NO">
+                </div>
+                <div class="info-field third">
+                    <label for="inspectionSection">Inspection Section:</label>
+                    <input type="text" id="inspectionSection" placeholder="SECTION">
+                </div>
+                <div class="info-field third">
+                    <label for="DepArr">DEP / ARR:</label>
+                    <input type="text" id="DepArr" placeholder="DEP/ARR">
+                </div>
+                <div class="info-field third">
+                    <label for="allRightSignal">All Right Signal (Crew &amp; TM):</label>
+                    <select id="allRightSignal">
+                        <option value="">-Select-</option>
+                        <option>YES</option>
+                        <option>NO</option>
+                        <option>N/A</option>
+                    </select>
+                </div>
+                <div class="info-field half">
+                    <label for="lpName">Name of Loco Pilot (Mail/Exp):</label>
+                    <input type="text" id="lpName" placeholder="LP NAME">
+                </div>
+                <div class="info-field half">
+                    <label for="alpName">Name of ALP:</label>
+                    <input type="text" id="alpName" placeholder="ALP NAME">
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SECTION 2: CREW TABLE ── -->
+        <div class="info-section">
+            <h2>Crew Details</h2>
+            <div class="table-wrapper">
+                <table id="crewTable">
+                    <thead>
+                        <tr>
+                            <th>Crew</th>
+                            <th>TM Name</th>
+                            <th>HQ</th>
+                            <th>PME Due</th>
+                            <th>CRC Due</th>
+                            <th>Spectacles</th>
+                            <th>Detonators</th>
+                            <th>Uniform</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight:bold;">TM</td>
+                            <td><input type="text" placeholder="TM NAME"></td>
+                            <td><input type="text" placeholder="HQ"></td>
+                            <td><input type="date"></td>
+                            <td><input type="date"></td>
+                            <td>
+                                <select>
+                                    <option value="">-</option>
+                                    <option>YES</option><option>NO</option><option>N/A</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="">-</option>
+                                    <option>YES</option><option>NO</option><option>N/A</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="">-</option>
+                                    <option>YES</option><option>NO</option><option>N/A</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── SECTION 3: INSPECTION CHECKLIST ── -->
+        <div class="info-section">
+            <h2>Brake Van Inspection Checklist</h2>
+            <div class="table-wrapper">
+                <table id="inspectionTable">
+                    <thead>
+                        <tr>
+                            <th style="width:38px;">SN</th>
+                            <th style="width:55%;">Observation / Irregularities</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inspectionBody">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── SECTION 4: REMARKS ── -->
+        <div class="info-section">
+            <h2>Remarks &amp; Irregularities</h2>
+            <div class="remarks-section">
+                <label for="irregularities">Irregularities (if any):</label>
+                <textarea id="irregularities" rows="2" placeholder="ENTER IRREGULARITIES"></textarea>
+            </div>
+            <div class="remarks-section">
+                <label for="otherRemarks">Other Remarks (if any):</label>
+                <textarea id="otherRemarks" rows="2" placeholder="OTHER REMARKS"></textarea>
+            </div>
+        </div>
+
+        <!-- ── SECTION 5: DUAL SIGNATURE (from index.html) ── -->
+        <div class="info-section">
+            <h2>Inspector Details &amp; Signature</h2>
+            <div class="info-fields" style="margin-bottom:10px;">
+                <div class="info-field third">
+                    <label for="place">Place:</label>
+                    <input type="text" id="place" placeholder="PLACE">
+                </div>
+                <div class="info-field third">
+                    <label for="signDate">Date:</label>
+                    <input type="date" id="signDate">
+                </div>
+            </div>
+            <div class="dual-sig-section">
+                <!-- LEFT -->
+                <div class="sig-box">
+                    <div class="sig-box-title">CLI — Inspector 1</div>
+                    <label for="cliName">CLI Name and HQ:</label>
+                    <select id="cliName">
+                        <option value="">Select CLI Name and HQ</option>
+                        <option value="A K REDDY/CLI/R">A K REDDY/CLI/R</option>
+                        <option value="A.R.TARAM/CLI/BIA">A.R. TARAM/CLI/BIA</option>
+                        <option value="ABDUL MOIN KHAN/CLI/BIA">ABDUL MOIN KHAN/CLI/BIA</option>
+                        <option value="AKHILESH KUMAR/CLI/BIA">AKHILESH KUMAR/CLI/BIA</option>
+                        <option value="AMIT KUMAR BANKURE/CLI/BYT">AMIT KUMAR BANKURE/CLI/BYT</option>
+                        <option value="ANANT PRAKASH SHRIVASTAVA/CLI/BIA">ANANT PRAKASH SHRIVASTAVA/CLI/BIA</option>
+                        <option value="ANIL KUMAR/CLI/BIA">ANIL KUMAR/CLI/BIA</option>
+                        <option value="ANKIT RAM KANT/CLI/BIA">ANKIT RAM KANT/CLI/BIA</option>
+                        <option value="AVON KUMAR SAHU/CLI/R">AVON KUMAR SAHU/CLI/R</option>
+                        <option value="ASHISH WANJARI/CLI/BYT">ASHISH WANJARI/CLI/BYT</option>
+                        <option value="B B KUSHWAHA/CLI/BIA">B B KUSHWAHA/CLI/BIA</option>
+                        <option value="B K HARMUKH/CLI/BIA">B K HARMUKH/CLI/BIA</option>
+                        <option value="B. K. SAHA/CLI/BIA">B. K. SAHA/CLI/BIA</option>
+                        <option value="B.K.SONI/CLI/BIA">B.K.SONI/CLI/BIA</option>
+                        <option value="BHARAT SINGH ATBHAIYYA/CLI/R">BHARAT SINGH ATBHAIYYA/CLI/R</option>
+                        <option value="BHOLI CHAUDHARY/CLI/R">BHOLI CHAUDHARY/CLI/R</option>
+                        <option value="BIKRAMJIT KANRAR/CLI/BIA">BIKRAMJIT KANRAR/CLI/BIA</option>
+                        <option value="BINOD KUMAR RAM/CLI/R">BINOD KUMAR RAM/CLI/R</option>
+                        <option value="DEEPANNITA PUNTAMBEKAR/CLI/BIA">DEEPANNITA PUNTAMBEKAR/CLI/BIA</option>
+                        <option value="DILLI RAO/CLI/BYT">DILLI RAO/CLI/BYT</option>
+                        <option value="G. C. BISWAS/CLI/R">G. C. BISWAS/CLI/R</option>
+                        <option value="G. V. R. K. MADHU/CLI/BIA">G. V. R. K. MADHU/CLI/BIA</option>
+                        <option value="GIRDHARI LAL/CLI/R">GIRDHARI LAL/CLI/R</option>
+                        <option value="JAISHANKAR SHARMA/CLI/BIA">JAISHANKAR SHARMA/CLI/BIA</option>
+                        <option value="JITENDRA KUMAR MISHRA/CLI/BYT">JITENDRA KUMAR MISHRA/CLI/BYT</option>
+                        <option value="K P LAHARE/CLI/R">K P LAHARE/CLI/R</option>
+                        <option value="K P HIRWANI/CLI/BYT">K P HIRWANI/CLI/BYT</option>
+                        <option value="K. K. SAHU/CLI/BIA">K. K. SAHU/CLI/BIA</option>
+                        <option value="KHUSAL SINGH/CLI/DRZ">KHUSAL SINGH/CLI/DRZ</option>
+                        <option value="MAHESHWAR/CLI/BIA">MAHESHWAR/CLI/BIA</option>
+                        <option value="MANOJ KUMAR SAO/CLI/R">MANOJ KUMAR SAO/CLI/R</option>
+                        <option value="MANSUKH LAL CHANDRAKAR/CLI/R">MANSUKH LAL CHANDRAKAR/CLI/R</option>
+                        <option value="MOHIT KUMAR SWARNKAR/CLI/BIA">MOHIT KUMAR SWARNKAR/CLI/BIA</option>
+                        <option value="N. R. KARPAL/CLI/BIA">N. R. KARPAL/CLI/BIA</option>
+                        <option value="N.K. BHOI/CLI/R">N.K. BHOI/CLI/R</option>
+                        <option value="NITIN KUKDE/CLI/BYT">NITIN KUKDE/CLI/BYT</option>
+                        <option value="NIRMAL KUMAR/CLI/BYT">NIRMAL KUMAR/CLI/BYT</option>
+                        <option value="P.K. PATEL/CLI/BIA">P.K. PATEL/CLI/BIA</option>
+                        <option value="PANKAJ KUMAR SINGH/CLI/BIA">PANKAJ KUMAR SINGH/CLI/BIA</option>
+                        <option value="PAWAN KUMAR SINGH/CLI/BIA">PAWAN KUMAR SINGH/CLI/BIA</option>
+                        <option value="PURAN LAL PATEL/CLI/BYT">PURAN LAL PATEL/CLI/BYT</option>
+                        <option value="RAJENDRA KUMAR/CLI/BIA">RAJENDRA KUMAR/CLI/BIA</option>
+                        <option value="PALAK RAM ALENDRA/CLI/DRZ">PALAK RAM ALENDRA/CLI/DRZ</option>
+                        <option value="RAJESH KUMAR DESHMUKH/CLI/R">RAJESH KUMAR DESHMUKH/CLI/R</option>
+                        <option value="RAJNEESH BENERJEE/CLI/BIA">RAJNEESH BENERJEE/CLI/BIA</option>
+                        <option value="RANJEET SINGH/CLI/BYT">RANJEET SINGH/CLI/BYT</option>
+                        <option value="RAKESH KUMAR KOSTA/CLI/DRZ">RAKESH KUMAR KOSTA/CLI/DRZ</option>
+                        <option value="S K GAUTAM/CLI/BIA">S K GAUTAM/CLI/BIA</option>
+                        <option value="S S HUSSAIN/CLI/BIA">S S HUSSAIN/CLI/BIA</option>
+                        <option value="S. C. RAI/CLI/BIA">S. C. RAI/CLI/BIA</option>
+                        <option value="S. K. SINGH/CLI/BIA">S. K. SINGH/CLI/BIA</option>
+                        <option value="S. L. SONI/CLI/R">S. L. SONI/CLI/R</option>
+                        <option value="SANJAY KUMAR ROY/CLI/BIA">SANJAY KUMAR ROY/CLI/BIA</option>
+                        <option value="SANJAY SINGH/CLI/DRZ">SANJAY SINGH/CLI/DRZ</option>
+                        <option value="SANJEEV KUMAR SHARMA/CLI/BIA">SANJEEV KUMAR SHARMA/CLI/BIA</option>
+                        <option value="SANTOSH KUMAR PATKAR/CLI/BIA">SANTOSH KUMAR PATKAR/CLI/BIA</option>
+                        <option value="SHAILENDRA SINGH/CLI/BIA">SHAILENDRA SINGH/CLI/BIA</option>
+                        <option value="SUNDEEP KUMAR SHARMA/CLI/BIA">SUNDEEP KUMAR SHARMA/CLI/BIA</option>
+                        <option value="SUNIL KUMAR DEWANGAN/CLI/BIA">SUNIL KUMAR DEWANGAN/CLI/BIA</option>
+                        <option value="SANAT KUMAR SAHU/CLI/DRZ">SANAT KUMAR SAHU/CLI/DRZ</option>
+                        <option value="V.K. BHAGAT/CLI/R">V.K. BHAGAT/CLI/R</option>
+                        <option value="VIJAY KUMAR ARYA/CLI/BIA">VIJAY KUMAR ARYA/CLI/BIA</option>
+                        <option value="VIKAS SHENDE/CLI/BIA">VIKAS SHENDE/CLI/BIA</option>
+                        <option value="VINAY KUMAR VINCHURE/CLI/BIA">VINAY KUMAR VINCHURE/CLI/BIA</option>
+                        <option value="VINAY PANTAWANE/CLI/BIA">VINAY PANTAWANE/CLI/BIA</option>
+                        <option value="Y. RAMU/CLI/BIA">Y. RAMU/CLI/BIA</option>
+                        <option value="YOGESH KUMAR MIHAULIA/CLI/BIA">YOGESH KUMAR MIHAULIA/CLI/BIA</option>
+                        <option value="OTHERS">OTHERS</option>
+                    </select>
+                    <label for="sig1Upload" style="margin-top:8px;">Upload Signature:</label>
+                    <input type="file" id="sig1Upload" accept="image/*" onchange="previewSig(event,'sig1Preview','sig1Img')">
+                    <div id="sig1Preview" class="sig-preview">
+                        <img id="sig1Img" alt="Signature 1">
+                    </div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="sig-box">
+                    <div class="sig-box-title">CLI — Inspector 2</div>
+                    <label for="cliName2">CLI Name and HQ:</label>
+                    <select id="cliName2">
+                        <option value="">Select CLI Name and HQ</option>
+                        <option value="A K REDDY/CLI/R">A K REDDY/CLI/R</option>
+                        <option value="A.R.TARAM/CLI/BIA">A.R. TARAM/CLI/BIA</option>
+                        <option value="ABDUL MOIN KHAN/CLI/BIA">ABDUL MOIN KHAN/CLI/BIA</option>
+                        <option value="AKHILESH KUMAR/CLI/BIA">AKHILESH KUMAR/CLI/BIA</option>
+                        <option value="AMIT KUMAR BANKURE/CLI/BYT">AMIT KUMAR BANKURE/CLI/BYT</option>
+                        <option value="ANANT PRAKASH SHRIVASTAVA/CLI/BIA">ANANT PRAKASH SHRIVASTAVA/CLI/BIA</option>
+                        <option value="ANIL KUMAR/CLI/BIA">ANIL KUMAR/CLI/BIA</option>
+                        <option value="ANKIT RAM KANT/CLI/BIA">ANKIT RAM KANT/CLI/BIA</option>
+                        <option value="AVON KUMAR SAHU/CLI/R">AVON KUMAR SAHU/CLI/R</option>
+                        <option value="ASHISH WANJARI/CLI/BYT">ASHISH WANJARI/CLI/BYT</option>
+                        <option value="B B KUSHWAHA/CLI/BIA">B B KUSHWAHA/CLI/BIA</option>
+                        <option value="B K HARMUKH/CLI/BIA">B K HARMUKH/CLI/BIA</option>
+                        <option value="B. K. SAHA/CLI/BIA">B. K. SAHA/CLI/BIA</option>
+                        <option value="B.K.SONI/CLI/BIA">B.K.SONI/CLI/BIA</option>
+                        <option value="BHARAT SINGH ATBHAIYYA/CLI/R">BHARAT SINGH ATBHAIYYA/CLI/R</option>
+                        <option value="BHOLI CHAUDHARY/CLI/R">BHOLI CHAUDHARY/CLI/R</option>
+                        <option value="BIKRAMJIT KANRAR/CLI/BIA">BIKRAMJIT KANRAR/CLI/BIA</option>
+                        <option value="BINOD KUMAR RAM/CLI/R">BINOD KUMAR RAM/CLI/R</option>
+                        <option value="DEEPANNITA PUNTAMBEKAR/CLI/BIA">DEEPANNITA PUNTAMBEKAR/CLI/BIA</option>
+                        <option value="DILLI RAO/CLI/BYT">DILLI RAO/CLI/BYT</option>
+                        <option value="G. C. BISWAS/CLI/R">G. C. BISWAS/CLI/R</option>
+                        <option value="G. V. R. K. MADHU/CLI/BIA">G. V. R. K. MADHU/CLI/BIA</option>
+                        <option value="GIRDHARI LAL/CLI/R">GIRDHARI LAL/CLI/R</option>
+                        <option value="JAISHANKAR SHARMA/CLI/BIA">JAISHANKAR SHARMA/CLI/BIA</option>
+                        <option value="JITENDRA KUMAR MISHRA/CLI/BYT">JITENDRA KUMAR MISHRA/CLI/BYT</option>
+                        <option value="K P LAHARE/CLI/R">K P LAHARE/CLI/R</option>
+                        <option value="K P HIRWANI/CLI/BYT">K P HIRWANI/CLI/BYT</option>
+                        <option value="K. K. SAHU/CLI/BIA">K. K. SAHU/CLI/BIA</option>
+                        <option value="KHUSAL SINGH/CLI/DRZ">KHUSAL SINGH/CLI/DRZ</option>
+                        <option value="MAHESHWAR/CLI/BIA">MAHESHWAR/CLI/BIA</option>
+                        <option value="MANOJ KUMAR SAO/CLI/R">MANOJ KUMAR SAO/CLI/R</option>
+                        <option value="MANSUKH LAL CHANDRAKAR/CLI/R">MANSUKH LAL CHANDRAKAR/CLI/R</option>
+                        <option value="MOHIT KUMAR SWARNKAR/CLI/BIA">MOHIT KUMAR SWARNKAR/CLI/BIA</option>
+                        <option value="N. R. KARPAL/CLI/BIA">N. R. KARPAL/CLI/BIA</option>
+                        <option value="N.K. BHOI/CLI/R">N.K. BHOI/CLI/R</option>
+                        <option value="NITIN KUKDE/CLI/BYT">NITIN KUKDE/CLI/BYT</option>
+                        <option value="NIRMAL KUMAR/CLI/BYT">NIRMAL KUMAR/CLI/BYT</option>
+                        <option value="P.K. PATEL/CLI/BIA">P.K. PATEL/CLI/BIA</option>
+                        <option value="PANKAJ KUMAR SINGH/CLI/BIA">PANKAJ KUMAR SINGH/CLI/BIA</option>
+                        <option value="PAWAN KUMAR SINGH/CLI/BIA">PAWAN KUMAR SINGH/CLI/BIA</option>
+                        <option value="PURAN LAL PATEL/CLI/BYT">PURAN LAL PATEL/CLI/BYT</option>
+                        <option value="RAJENDRA KUMAR/CLI/BIA">RAJENDRA KUMAR/CLI/BIA</option>
+                        <option value="PALAK RAM ALENDRA/CLI/DRZ">PALAK RAM ALENDRA/CLI/DRZ</option>
+                        <option value="RAJESH KUMAR DESHMUKH/CLI/R">RAJESH KUMAR DESHMUKH/CLI/R</option>
+                        <option value="RAJNEESH BENERJEE/CLI/BIA">RAJNEESH BENERJEE/CLI/BIA</option>
+                        <option value="RANJEET SINGH/CLI/BYT">RANJEET SINGH/CLI/BYT</option>
+                        <option value="RAKESH KUMAR KOSTA/CLI/DRZ">RAKESH KUMAR KOSTA/CLI/DRZ</option>
+                        <option value="S K GAUTAM/CLI/BIA">S K GAUTAM/CLI/BIA</option>
+                        <option value="S S HUSSAIN/CLI/BIA">S S HUSSAIN/CLI/BIA</option>
+                        <option value="S. C. RAI/CLI/BIA">S. C. RAI/CLI/BIA</option>
+                        <option value="S. K. SINGH/CLI/BIA">S. K. SINGH/CLI/BIA</option>
+                        <option value="S. L. SONI/CLI/R">S. L. SONI/CLI/R</option>
+                        <option value="SANJAY KUMAR ROY/CLI/BIA">SANJAY KUMAR ROY/CLI/BIA</option>
+                        <option value="SANJAY SINGH/CLI/BYT">SANJAY SINGH/CLI/BYT</option>
+                        <option value="SANJEEV KUMAR SHARMA/CLI/BIA">SANJEEV KUMAR SHARMA/CLI/BIA</option>
+                        <option value="SANTOSH KUMAR PATKAR/CLI/BIA">SANTOSH KUMAR PATKAR/CLI/BIA</option>
+                        <option value="SHAILENDRA SINGH/CLI/BIA">SHAILENDRA SINGH/CLI/BIA</option>
+                        <option value="SUNDEEP KUMAR SHARMA/CLI/BIA">SUNDEEP KUMAR SHARMA/CLI/BIA</option>
+                        <option value="SUNIL KUMAR DEWANGAN/CLI/BIA">SUNIL KUMAR DEWANGAN/CLI/BIA</option>
+                        <option value="SANAT KUMAR SAHU/CLI/DRZ">SANAT KUMAR SAHU/CLI/DRZ</option>
+                        <option value="V.K. BHAGAT/CLI/R">V.K. BHAGAT/CLI/R</option>
+                        <option value="VIJAY KUMAR ARYA/CLI/BIA">VIJAY KUMAR ARYA/CLI/BIA</option>
+                        <option value="VIKAS SHENDE/CLI/BIA">VIKAS SHENDE/CLI/BIA</option>
+                        <option value="VINAY KUMAR VINCHURE/CLI/BIA">VINAY KUMAR VINCHURE/CLI/BIA</option>
+                        <option value="VINAY PANTAWANE/CLI/BIA">VINAY PANTAWANE/CLI/BIA</option>
+                        <option value="Y. RAMU/CLI/BIA">Y. RAMU/CLI/BIA</option>
+                        <option value="YOGESH KUMAR MIHAULIA/CLI/BIA">YOGESH KUMAR MIHAULIA/CLI/BIA</option>
+                        <option value="OTHERS">OTHERS</option>
+                    </select>
+                    <label for="sig2Upload" style="margin-top:8px;">Upload Signature:</label>
+                    <input type="file" id="sig2Upload" accept="image/*" onchange="previewSig(event,'sig2Preview','sig2Img')">
+                    <div id="sig2Preview" class="sig-preview">
+                        <img id="sig2Img" alt="Signature 2">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="file" id="draftFileInput" accept=".json" onchange="handleDraftUpload(event)">
+
+        <div id="message" class="message"></div>
+        <div class="button-group">
+            <button class="save-draft-btn" onclick="saveDraft()">💾 Save Draft</button>
+            <button class="upload-draft-btn" onclick="document.getElementById('draftFileInput').click()">📂 Upload Draft</button>
+            <button class="submit-btn" onclick="submitForm()">✅ Submit</button>
+            <button class="pdf-btn" onclick="generatePDF()">📄 Generate PDF</button>
+        </div>
+
+
+    </div>
+</div>
+
+<script>
+// ── INSPECTION ITEMS ──────────────────────────────────────────────
+const inspectionItems = [
+    { sn: 1,  obs: 'Safety Equipments Almirah Door',     defaultStatus: 'LEG SEALED WITH PACK THREAD' },
+    { sn: 2,  obs: 'Stretcher',                          defaultStatus: 'AVAILABLE' },
+    { sn: 3,  obs: 'Fire Extinguisher Due Date',         defaultStatus: '' },
+    { sn: 4,  obs: 'Wooden Wedge',                       defaultStatus: '' },
+    { sn: 5,  obs: 'TM Hand Book',                       defaultStatus: 'AVAILABLE' },
+    { sn: 6,  obs: 'First Aid Box',                      defaultStatus: 'AVAILABLE' },
+    { sn: 7,  obs: 'Working Time Table',                 defaultStatus: '' },
+    { sn: 8,  obs: 'Tricolor Torch',                     defaultStatus: 'AVAILABLE' },
+    { sn: 9,  obs: 'Tail Lamp',                          defaultStatus: 'AVAILABLE' },
+    { sn: 10, obs: 'LV Board',                           defaultStatus: 'AVAILABLE' },
+    { sn: 11, obs: 'HS Flag',                            defaultStatus: '' },
+    { sn: 12, obs: 'Walkie-Talkie',                      defaultStatus: 'WORKING ORDER' },
+    { sn: 13, obs: 'Portable Telephone',                 defaultStatus: 'NIL' },
+    { sn: 14, obs: 'PTL Equipment',                      defaultStatus: 'AVAILABLE' },
+    { sn: 15, obs: 'BP / FP Gauge Calibration Date',     defaultStatus: 'AVAILABLE' },
+    { sn: 16, obs: 'Spare BP / FP Hose Pipe',            defaultStatus: 'AVAILABLE' },
+    { sn: 17, obs: 'BP / FP Couplers',                   defaultStatus: 'AVAILABLE' },
+    { sn: 18, obs: 'BP Pressure',                        defaultStatus: '' },
+    { sn: 19, obs: 'FP Pressure',                        defaultStatus: '' },
+    { sn: 20, obs: 'BP / FP Gauge Condition',            defaultStatus: '' },
+    { sn: 21, obs: 'Hand Brake',                         defaultStatus: 'WORKING' },
+];
+
+function buildInspectionTable() {
+    const tbody = document.getElementById('inspectionBody');
+    tbody.innerHTML = '';
+    inspectionItems.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.sn}</td>
+            <td class="obs-cell">${item.obs}</td>
+            <td><input type="text" class="status-input" data-sn="${item.sn}" value="${item.defaultStatus}" placeholder="STATUS"></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ── SIGNATURE PREVIEW ─────────────────────────────────────────────
+function previewSig(event, previewId, imgId) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById(previewId).style.display = 'block';
+        document.getElementById(imgId).src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ── COLLECT FORM DATA ─────────────────────────────────────────────
+function collectFormData() {
+    const statuses = {};
+    document.querySelectorAll('.status-input').forEach(inp => { statuses[inp.dataset.sn] = inp.value; });
+    const crewRow = document.querySelector('#crewTable tbody tr');
+    const crewCells = crewRow ? crewRow.querySelectorAll('input, select') : [];
+    return {
+        formDate:          document.getElementById('formDate').value,
+        trainNo:           document.getElementById('trainNo').value,
+        load:              document.getElementById('load').value,
+        slr:               document.getElementById('slr').value,
+        bpcNo:             document.getElementById('bpcNo').value,
+        issued:            document.getElementById('issued').value,
+        issuedDate:        document.getElementById('issuedDate').value,
+        brpPercent:        document.getElementById('brpPercent').value,
+        locoNumber:        document.getElementById('locoNumber').value,
+        inspectionSection: document.getElementById('inspectionSection').value,
+        DepArr:            document.getElementById('DepArr').value,
+        allRightSignal:    document.getElementById('allRightSignal').value,
+        lpName:            document.getElementById('lpName').value,
+        alpName:           document.getElementById('alpName').value,
+        crew: {
+            name:       crewCells[0] ? crewCells[0].value : '',
+            hq:         crewCells[1] ? crewCells[1].value : '',
+            pmeDue:     crewCells[2] ? crewCells[2].value : '',
+            crcDue:     crewCells[3] ? crewCells[3].value : '',
+            spectacles: crewCells[4] ? crewCells[4].value : '',
+            detonators: crewCells[5] ? crewCells[5].value : '',
+            uniform:    crewCells[6] ? crewCells[6].value : ''
+        },
+        inspectionStatuses: statuses,
+        irregularities: document.getElementById('irregularities').value,
+        otherRemarks:   document.getElementById('otherRemarks').value,
+        place:          document.getElementById('place').value,
+        signDate:       document.getElementById('signDate').value,
+        cliName:        document.getElementById('cliName').value,
+        cliName2:       document.getElementById('cliName2').value
+    };
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────
+let formSubmitted = false;
+function submitForm() {
+    if (formSubmitted) { showMessage('⚠️ Data Already Submitted! Cannot submit again.', 'error'); return; }
+    const data = collectFormData();
+    console.log('Form Data:', data);
+    formSubmitted = true;
+    showMessage('✅ Form submitted successfully!', 'success');
+}
+
+// ── SAVE DRAFT ────────────────────────────────────────────────────
+function saveDraft() {
+    const data = collectFormData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BrakeVan_Draft_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showMessage('💾 Draft saved!', 'success');
+}
+
+// ── UPLOAD DRAFT ──────────────────────────────────────────────────
+function handleDraftUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            restoreFormData(data);
+            showMessage('📂 Draft loaded successfully!', 'success');
+        } catch(err) { showMessage('❌ Invalid draft file.', 'error'); }
+    };
+    reader.readAsText(file);
+}
+
+function restoreFormData(data) {
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+    setVal('formDate', data.formDate); setVal('trainNo', data.trainNo);
+    setVal('load', data.load); setVal('slr', data.slr);
+    setVal('bpcNo', data.bpcNo); setVal('issued', data.issued);
+    setVal('issuedDate', data.issuedDate); setVal('brpPercent', data.brpPercent);
+    setVal('locoNumber', data.locoNumber); setVal('inspectionSection', data.inspectionSection);
+    setVal('DepArr', data.DepArr); setVal('allRightSignal', data.allRightSignal);
+    setVal('lpName', data.lpName); setVal('alpName', data.alpName);
+    setVal('irregularities', data.irregularities); setVal('otherRemarks', data.otherRemarks);
+    setVal('place', data.place); setVal('signDate', data.signDate);
+    setVal('cliName', data.cliName); setVal('cliName2', data.cliName2);
+    if (data.inspectionStatuses) {
+        document.querySelectorAll('.status-input').forEach(inp => {
+            if (data.inspectionStatuses[inp.dataset.sn] !== undefined)
+                inp.value = data.inspectionStatuses[inp.dataset.sn];
+        });
+    }
+    if (data.crew) {
+        const crewRow = document.querySelector('#crewTable tbody tr');
+        if (crewRow) {
+            const cells = crewRow.querySelectorAll('input, select');
+            const crewVals = [data.crew.name, data.crew.hq, data.crew.pmeDue, data.crew.crcDue,
+                              data.crew.spectacles, data.crew.detonators, data.crew.uniform];
+            cells.forEach((c, i) => { if (crewVals[i] !== undefined) c.value = crewVals[i]; });
+        }
+    }
+}
+
+// ── GENERATE PDF ──────────────────────────────────────────────────
+async function generatePDF() {
+    // Guard: must submit before generating PDF
+    if (!formSubmitted) {
+        showMessage('⚠️ Please Submit the Form First Before Generating PDF!', 'warning');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    // fv: returns value, never a placeholder string
+    const fv = id => { const el = document.getElementById(id); return el ? (el.value || '') : ''; };
+
+    // ── Header with logo ──
+    const headerH = 32;
+    doc.setFillColor(26, 35, 126);
+    doc.rect(0, 0, pageW, headerH, 'F');
+
+    // Add logo: 70% of original 26x26 = ~18x18, with blue background only (no border)
+    try {
+        const logoImg = document.querySelector('.header-logo img');
+        if (logoImg && logoImg.src && logoImg.src.startsWith('data:image')) {
+            const logoW = 18, logoH = 18; // 70% of 26
+            const logoX = 10, logoY = 7;
+            // Fill blue background behind logo to replace white areas
+            doc.setFillColor(26, 35, 126);
+            doc.rect(logoX, logoY, logoW, logoH, 'F');
+            doc.addImage(logoImg.src, 'PNG', logoX, logoY, logoW, logoH);
+        }
+    } catch(e) {}
+
+    // Header text (centered in remaining space)
+    doc.setFont(undefined, 'bold'); doc.setFontSize(13); doc.setTextColor(255, 255, 255);
+    doc.text('AMBUSH BRAKE VAN INSPECTION REPORT', pageW / 2 + 8, 11, { align: 'center' });
+    doc.setFontSize(9); doc.setTextColor(255, 215, 0);
+    doc.text('RAIPUR DIVISION — SOUTH EAST CENTRAL RAILWAY', pageW / 2 + 8, 19, { align: 'center' });
+    doc.text('BRAKE VAN (BV) INSPECTION CHECKLIST', pageW / 2 + 8, 26, { align: 'center' });
+
+    let y = headerH + 5;
+    doc.setFont(undefined, 'bold'); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+
+    // ── Basic Info ──
+    doc.autoTable({
+        startY: y, theme: 'grid',
+        head: [['FIELD', 'VALUE', 'FIELD', 'VALUE', 'FIELD', 'VALUE']],
+        body: [
+            ['DATE', fv('formDate'), 'TRAIN NO.', fv('trainNo'), 'LOAD', fv('load')],
+            ['SLR', fv('slr'), 'BPC NO.', fv('bpcNo'), 'ISSUED', fv('issued')],
+            ['ISSUED DATE', fv('issuedDate'), 'BR/P %', fv('brpPercent'), 'LOCO NO.', fv('locoNumber')],
+            ['SECTION', fv('inspectionSection'), 'DEP/ARR', fv('DepArr'), 'ALL RIGHT SIGNAL', fv('allRightSignal')],
+            ['LP NAME', fv('lpName'), 'ALP NAME', fv('alpName'), '', ''],
+        ],
+        headStyles: { fillColor: [26,35,126], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 9 },
+        columnStyles: {
+            0: { fontStyle: 'bold', fillColor: [230,242,255], halign: 'left', cellWidth: 28, textColor: [0,0,0] },
+            1: { textColor: [0,0,0] },
+            2: { fontStyle: 'bold', fillColor: [230,242,255], halign: 'left', cellWidth: 28, textColor: [0,0,0] },
+            3: { textColor: [0,0,0] },
+            4: { fontStyle: 'bold', fillColor: [230,242,255], halign: 'left', cellWidth: 28, textColor: [0,0,0] },
+            5: { textColor: [0,0,0] },
+        },
+        styles: { fontSize: 8, cellPadding: 2.5, lineColor: [26,35,126], lineWidth: 0.3, textColor: [0,0,0] },
+        margin: { left: 14, right: 14 }
+    });
+    y = doc.lastAutoTable.finalY + 4;
+
+    // ── Crew Details ──
+    const crewRow = document.querySelector('#crewTable tbody tr');
+    const crewCells = crewRow ? crewRow.querySelectorAll('input, select') : [];
+    const cv = idx => crewCells[idx] ? (crewCells[idx].value || '') : '';
+    doc.autoTable({
+        startY: y, theme: 'grid',
+        head: [['CREW', 'TM NAME', 'HQ', 'PME DUE', 'CRC DUE', 'SPECTACLES', 'DETONATORS', 'UNIFORM']],
+        body: [['TM', cv(0), cv(1), cv(2), cv(3), cv(4), cv(5), cv(6)]],
+        headStyles: { fillColor: [26,35,126], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 8 },
+        styles: { fontSize: 8, cellPadding: 2.5, halign: 'center', lineColor: [26,35,126], lineWidth: 0.3, textColor: [0,0,0] },
+        columnStyles: { 0: { fontStyle: 'bold', fillColor: [230,242,255], textColor: [0,0,0] } },
+        margin: { left: 14, right: 14 }
+    });
+    y = doc.lastAutoTable.finalY + 4;
+
+    // ── Inspection Checklist ──
+    const inspBody = inspectionItems.map(item => {
+        const inp = document.querySelector(`.status-input[data-sn="${item.sn}"]`);
+        return [item.sn, item.obs, inp ? (inp.value || '') : ''];
+    });
+    doc.autoTable({
+        startY: y, theme: 'grid',
+        head: [['SN', 'OBSERVATION / IRREGULARITIES', 'STATUS']],
+        body: inspBody,
+        headStyles: { fillColor: [26,35,126], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 9 },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 12, fillColor: [230,242,255], fontStyle: 'bold', textColor: [0,0,0] },
+            1: { halign: 'left', cellWidth: 110, textColor: [0,0,0] },
+            2: { halign: 'center', textColor: [0,0,0] }
+        },
+        styles: { fontSize: 8, cellPadding: 2.5, lineColor: [26,35,126], lineWidth: 0.3, textColor: [0,0,0] },
+        margin: { left: 14, right: 14 }
+    });
+    y = doc.lastAutoTable.finalY + 4;
+
+    // ── Remarks ──
+    const irr = document.getElementById('irregularities').value || '';
+    const rem = document.getElementById('otherRemarks').value || '';
+    doc.autoTable({
+        startY: y, theme: 'grid',
+        head: [['REMARKS & IRREGULARITIES', '']],
+        body: [
+            ['IRREGULARITIES', irr || '-'],
+            ['OTHER REMARKS', rem || '-']
+        ],
+        headStyles: { fillColor: [26,35,126], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 9, cellPadding: 2.5 },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 50, halign: 'left', fillColor: [230,242,255], textColor: [0,0,0] },
+            1: { halign: 'left', textColor: [0,0,0] }
+        },
+        styles: { fontSize: 8, cellPadding: 2.5, lineColor: [26,35,126], lineWidth: 0.3, textColor: [0,0,0] },
+        margin: { left: 14, right: 14 },
+        didParseCell: function(data) {
+            if (data.section === 'head' && data.column.index === 0) { data.cell.text = ['REMARKS & IRREGULARITIES']; data.cell.colSpan = 2; }
+            if (data.section === 'head' && data.column.index === 1) { data.cell.text = []; }
+        }
+    });
+    y = doc.lastAutoTable.finalY + 6;
+
+    // ── Inspector Details & Signatures ──
+    // Signature is placed ABOVE the CLI name
+    const place    = fv('place');
+    const signDate = fv('signDate');
+    const cli1     = fv('cliName');
+    const cli2     = fv('cliName2');
+
+    const sig1Img = document.getElementById('sig1Img');
+    const sig2Img = document.getElementById('sig2Img');
+    const hasSig1 = sig1Img && sig1Img.src && sig1Img.src.startsWith('data:image');
+    const hasSig2 = sig2Img && sig2Img.src && sig2Img.src.startsWith('data:image');
+
+    // Place / Date (left side)
+    doc.setFont(undefined, 'bold'); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
+    if (place)    doc.text(`PLACE: ${place}`, 14, y);
+    if (signDate) doc.text(`DATE: ${signDate}`, 14, y + 6);
+
+    // Signature boxes: CLI-1 centered, CLI-2 right
+    // 70% of original 50x20 = 35x14
+    const sigW = 35, sigH = 14;
+    const cli1X = pageW / 2 - sigW / 2;   // centre
+    const cli2X = pageW - 14 - sigW;        // right
+
+    // Draw blue background behind signature areas (replaces white)
+    doc.setFillColor(26, 35, 126);
+    if (hasSig1) doc.rect(cli1X, y, sigW, sigH, 'F');
+    if (hasSig2) doc.rect(cli2X, y, sigW, sigH, 'F');
+
+    // Draw signature images ABOVE the CLI name line
+    try {
+        if (hasSig1) doc.addImage(sig1Img.src, 'PNG', cli1X, y, sigW, sigH);
+        if (hasSig2) doc.addImage(sig2Img.src, 'PNG', cli2X, y, sigW, sigH);
+    } catch(e) {}
+
+    // CLI names printed BELOW the signature images
+    const nameY = y + sigH + 4;
+    doc.setFont(undefined, 'bold'); doc.setFontSize(8); doc.setTextColor(0, 0, 0);
+    if (cli1) {
+        doc.text('CLI-1:', cli1X, nameY);
+        const cli1Lines = doc.splitTextToSize(cli1, sigW);
+        doc.text(cli1Lines, cli1X, nameY + 5);
+    }
+    if (cli2) {
+        doc.text('CLI-2:', cli2X, nameY);
+        const cli2Lines = doc.splitTextToSize(cli2, sigW);
+        doc.text(cli2Lines, cli2X, nameY + 5);
+    }
+
+    doc.save(`BrakeVan_Inspection_${new Date().toISOString().split('T')[0]}.pdf`);
+    showMessage('📄 PDF generated and downloaded!', 'success');
+}
+
+// ── SHOW MESSAGE ─────────────────────────────────────────────────
+function showMessage(text, type) {
+    const el = document.getElementById('message');
+    el.textContent = text; el.className = `message ${type}`; el.style.display = 'block';
+    // Scroll message into view so user sees it above buttons
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => { el.style.display = 'none'; }, 4500);
+}
+
+// ── MOBILE VIEW ─────────────────────────────────────────────────
+function toggleMobileView() {
+    const on = document.getElementById('mobileToggle').checked;
+    document.body.classList.toggle('mobile-view', on);
+    showMessage(on ? '📱 Mobile view enabled!' : '🖥️ Desktop view enabled!', 'success');
+}
+
+// ── ZOOM OVERLAY ─────────────────────────────────────────────────
+let originalInputElement = null;
+function openZoomInput(inputElement) {
+    originalInputElement = inputElement;
+    document.getElementById('zoomTitle').textContent = inputElement.placeholder || 'Enter Text';
+    document.getElementById('zoomInput').value = inputElement.value;
+    document.getElementById('zoomOverlay').classList.add('active');
+    setTimeout(() => document.getElementById('zoomInput').focus(), 100);
+    inputElement.blur();
+}
+function closeZoomInput() {
+    if (originalInputElement) originalInputElement.value = document.getElementById('zoomInput').value;
+    document.getElementById('zoomOverlay').classList.remove('active');
+    document.getElementById('zoomInput').value = '';
+    originalInputElement = null;
+}
+
+// ── VOICE TYPING ─────────────────────────────────────────────────
+let recognition = null, voiceEnabled = false, currentInput = null;
+
+function initVoiceRecognition() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
+        recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+        recognition.onresult = event => {
+            if (!currentInput) return;
+            let final = '';
+            for (let i = event.resultIndex; i < event.results.length; i++)
+                if (event.results[i].isFinal) final += event.results[i][0].transcript + ' ';
+            if (final) {
+                const pos = currentInput.selectionStart;
+                const before = currentInput.value.substring(0, pos);
+                const after  = currentInput.value.substring(pos);
+                currentInput.value = before + final.toUpperCase() + after;
+                const newPos = before.length + final.length;
+                currentInput.setSelectionRange(newPos, newPos);
+            }
+        };
+        recognition.onerror = event => {
+            if (event.error === 'not-allowed') {
+                showMessage('Microphone access denied.', 'error');
+                document.getElementById('voiceToggle').checked = false;
+                toggleVoiceTyping();
+            }
+        };
+        return true;
+    }
+    showMessage('Voice recognition not supported. Use Chrome or Edge.', 'error');
+    return false;
+}
+
+async function toggleVoiceTyping() {
+    const toggle = document.getElementById('voiceToggle');
+    const status = document.getElementById('voiceStatus');
+    voiceEnabled = toggle.checked;
+    if (voiceEnabled) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(t => t.stop());
+            if (!recognition && !initVoiceRecognition()) { toggle.checked = false; return; }
+            status.textContent = 'ON'; status.style.color = '#2ecc71';
+            document.getElementById('voiceIndicator').classList.add('listening');
+            try { recognition.start(); } catch(e) {}
+            showMessage('🎤 Voice typing enabled! Click any text field.', 'success');
+            setupVoiceInputs();
+        } catch(err) {
+            showMessage('Microphone permission denied.', 'error');
+            toggle.checked = false; voiceEnabled = false;
+        }
+    } else {
+        status.textContent = 'OFF'; status.style.color = 'white';
+        if (recognition) recognition.stop();
+        document.getElementById('voiceIndicator').classList.remove('listening');
+        showMessage('Voice typing disabled.', 'success');
+        removeVoiceInputs();
+    }
+}
+
+function setupVoiceInputs() {
+    document.querySelectorAll('input[type="text"], textarea').forEach(inp => {
+        inp.addEventListener('focus', handleInputFocus);
+        inp.addEventListener('blur', handleInputBlur);
+    });
+}
+function removeVoiceInputs() {
+    document.querySelectorAll('input[type="text"], textarea').forEach(inp => {
+        inp.removeEventListener('focus', handleInputFocus);
+        inp.removeEventListener('blur', handleInputBlur);
+    });
+    currentInput = null;
+}
+function handleInputFocus(event) {
+    if (document.body.classList.contains('mobile-view') && event.target.closest('td')) {
+        openZoomInput(event.target); return;
+    }
+    if (voiceEnabled) {
+        currentInput = event.target;
+        currentInput.style.borderColor = '#e74c3c';
+        currentInput.style.boxShadow = '0 0 8px rgba(231,76,60,0.3)';
+    }
+}
+function handleInputBlur(event) {
+    if (voiceEnabled && event.target === currentInput) {
+        event.target.style.borderColor = '#b3d9ff';
+        event.target.style.boxShadow = 'none';
+    }
+}
+
+// ── AUTO-RESIZE TEXTAREA ──────────────────────────────────────────
+function autoResizeTextarea(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    buildInspectionTable();
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('formDate').value = today;
+    document.getElementById('signDate').value = today;
+    ['otherRemarks','irregularities'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => autoResizeTextarea(el));
+    });
+    document.addEventListener('focus', e => {
+        const t = e.target;
+        if (t.matches('input[type="text"], textarea') && t.closest('td') && document.body.classList.contains('mobile-view'))
+            handleInputFocus(e);
+    }, true);
+});
+</script>
+</body>
+</html>
