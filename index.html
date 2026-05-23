@@ -1,6 +1,10 @@
 
 
 
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -209,6 +213,33 @@
         .zoom-done-btn { width: 100%; margin-top: 12px; padding: 11px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; }
         .zoom-done-btn:hover { background: #229954; }
 
+        /* ── AUTO-SAVE INDICATOR ── */
+        .autosave-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            padding: 5px 16px; border-bottom: 2px solid #FFD700;
+            flex-wrap: wrap; gap: 6px;
+        }
+        .autosave-status {
+            font-size: 11px; font-weight: bold; color: #aed6f1;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .autosave-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #aed6f1; display: inline-block;
+            transition: background 0.3s;
+        }
+        .autosave-dot.saved { background: #2ecc71; animation: savePulse 0.6s ease; }
+        @keyframes savePulse { 0% { transform: scale(1); } 50% { transform: scale(1.5); } 100% { transform: scale(1); } }
+        .clear-draft-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white; border: none; border-radius: 6px;
+            padding: 4px 12px; font-size: 11px; font-weight: bold;
+            cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        .clear-draft-btn:hover { background: linear-gradient(135deg, #c0392b 0%, #a93226 100%); transform: translateY(-1px); }
+
         @media (max-width: 768px) {
             .header-text h1 { font-size: 1.1em; }
             .header-inner { flex-direction: column; text-align: center; }
@@ -267,6 +298,15 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ── AUTO-SAVE BAR ── -->
+    <div class="autosave-bar">
+        <div class="autosave-status">
+            <span class="autosave-dot" id="autosaveDot"></span>
+            <span id="autosaveText">Draft auto-saves as you type…</span>
+        </div>
+        <button class="clear-draft-btn" onclick="clearDraft()">🗑️ Clear Draft</button>
     </div>
 
     <!-- ── FORM ── -->
@@ -500,6 +540,8 @@
                         <option value="SUNDEEP KUMAR SHARMA/CLI/BIA">SUNDEEP KUMAR SHARMA/CLI/BIA</option>
                         <option value="SUNIL KUMAR DEWANGAN/CLI/BIA">SUNIL KUMAR DEWANGAN/CLI/BIA</option>
                         <option value="SANAT KUMAR SAHU/CLI/DRZ">SANAT KUMAR SAHU/CLI/DRZ</option>
+                        <option value="SATYENDRA KUMAR/CLI/BYT">SATYENDRA KUMAR/CLI/BYT</option>
+                        <option value="SURENDRA KUMAR SONI/CLI/BYT">SURENDRA KUMAR SONI/CLI/BYT</option>
                         <option value="V.K. BHAGAT/CLI/R">V.K. BHAGAT/CLI/R</option>
                         <option value="VIJAY KUMAR ARYA/CLI/BIA">VIJAY KUMAR ARYA/CLI/BIA</option>
                         <option value="VIKAS SHENDE/CLI/BIA">VIKAS SHENDE/CLI/BIA</option>
@@ -509,6 +551,9 @@
                         <option value="YOGESH KUMAR MIHAULIA/CLI/BIA">YOGESH KUMAR MIHAULIA/CLI/BIA</option>
                         <option value="OTHERS">OTHERS</option>
                     </select>
+                    <div id="cliNameOtherBox" style="display:none;margin-top:5px;">
+                        <input type="text" id="cliNameOther" placeholder="Enter CLI Name manually..." style="width:100%;padding:5px 7px;border:2px solid #e74c3c;border-radius:5px;font-size:11px;font-weight:bold;background:#fff8f8;">
+                    </div>
                     <label for="sig1Upload" style="margin-top:8px;">Upload Signature:</label>
                     <input type="file" id="sig1Upload" accept="image/*" onchange="previewSig(event,'sig1Preview','sig1Img')">
                     <div id="sig1Preview" class="sig-preview">
@@ -582,6 +627,8 @@
                         <option value="SUNDEEP KUMAR SHARMA/CLI/BIA">SUNDEEP KUMAR SHARMA/CLI/BIA</option>
                         <option value="SUNIL KUMAR DEWANGAN/CLI/BIA">SUNIL KUMAR DEWANGAN/CLI/BIA</option>
                         <option value="SANAT KUMAR SAHU/CLI/DRZ">SANAT KUMAR SAHU/CLI/DRZ</option>
+                        <option value="SATYENDRA KUMAR/CLI/BYT">SATYENDRA KUMAR/CLI/BYT</option>
+                        <option value="SURENDRA KUMAR SONI/CLI/BYT">SURENDRA KUMAR SONI/CLI/BYT</option>
                         <option value="V.K. BHAGAT/CLI/R">V.K. BHAGAT/CLI/R</option>
                         <option value="VIJAY KUMAR ARYA/CLI/BIA">VIJAY KUMAR ARYA/CLI/BIA</option>
                         <option value="VIKAS SHENDE/CLI/BIA">VIKAS SHENDE/CLI/BIA</option>
@@ -591,6 +638,9 @@
                         <option value="YOGESH KUMAR MIHAULIA/CLI/BIA">YOGESH KUMAR MIHAULIA/CLI/BIA</option>
                         <option value="OTHERS">OTHERS</option>
                     </select>
+                    <div id="cliName2OtherBox" style="display:none;margin-top:5px;">
+                        <input type="text" id="cliName2Other" placeholder="Enter CLI Name manually..." style="width:100%;padding:5px 7px;border:2px solid #e74c3c;border-radius:5px;font-size:11px;font-weight:bold;background:#fff8f8;">
+                    </div>
                     <label for="sig2Upload" style="margin-top:8px;">Upload Signature:</label>
                     <input type="file" id="sig2Upload" accept="image/*" onchange="previewSig(event,'sig2Preview','sig2Img')">
                     <div id="sig2Preview" class="sig-preview">
@@ -828,6 +878,14 @@ async function generatePDF() {
     const pageW = doc.internal.pageSize.getWidth();
     // fv: returns value, never a placeholder string
     const fv = id => { const el = document.getElementById(id); return el ? (el.value || '') : ''; };
+    // fd: returns value formatted as DD/MM/YYYY
+    const fd = id => fmtDate(fv(id));
+    // fcli: returns CLI name - if OTHERS selected, use manual text box value
+    const fcli = (selId, otherId) => {
+        const val = fv(selId);
+        if (val === 'OTHERS') return fv(otherId) || 'OTHERS';
+        return val;
+    };
 
     // ── Header with logo ──
     const headerH = 32;
@@ -895,9 +953,9 @@ async function generatePDF() {
         startY: y, theme: 'grid',
         head: [['FIELD', 'VALUE', 'FIELD', 'VALUE', 'FIELD', 'VALUE']],
         body: [
-            ['DATE', fv('formDate'), 'TRAIN NO.', fv('trainNo'), 'LOAD', fv('load')],
+            ['DATE', fd('formDate'), 'TRAIN NO.', fv('trainNo'), 'LOAD', fv('load')],
             ['SLR', fv('slr'), 'BPC NO.', fv('bpcNo'), 'ISSUED', fv('issued')],
-            ['ISSUED DATE', fv('issuedDate'), 'BR/P %', fv('brpPercent'), 'LOCO NO.', fv('locoNumber')],
+            ['ISSUED DATE', fd('issuedDate'), 'BR/P %', fv('brpPercent'), 'LOCO NO.', fv('locoNumber')],
             ['SECTION', fv('inspectionSection'), 'DEP/ARR', fv('DepArr'), 'ALL RIGHT SIGNAL', fv('allRightSignal')],
             ['LP NAME', fv('lpName'), 'ALP NAME', fv('alpName'), '', ''],
         ],
@@ -922,7 +980,7 @@ async function generatePDF() {
     doc.autoTable({
         startY: y, theme: 'grid',
         head: [['CREW', 'TM NAME', 'HQ', 'PME DUE', 'CRC DUE', 'SPECTACLES', 'DETONATORS', 'UNIFORM']],
-        body: [['TM', cv(0), cv(1), cv(2), cv(3), cv(4), cv(5), cv(6)]],
+        body: [['TM', cv(0), cv(1), fmtDate(cv(2)), fmtDate(cv(3)), cv(4), cv(5), cv(6)]],
         headStyles: { fillColor: [26,35,126], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 8 },
         styles: { fontSize: 8, cellPadding: 2.5, halign: 'center', lineColor: [26,35,126], lineWidth: 0.3, textColor: [0,0,0] },
         columnStyles: { 0: { fontStyle: 'bold', fillColor: [230,242,255], textColor: [0,0,0] } },
@@ -977,53 +1035,270 @@ async function generatePDF() {
     // ── Inspector Details & Signatures ──
     // Signature is placed ABOVE the CLI name
     const place    = fv('place');
-    const signDate = fv('signDate');
-    const cli1     = fv('cliName');
-    const cli2     = fv('cliName2');
+    const signDate = fd('signDate');
+    const cli1     = fcli('cliName', 'cliNameOther');
+    const cli2     = fcli('cliName2', 'cliName2Other');
 
     const sig1Img = document.getElementById('sig1Img');
     const sig2Img = document.getElementById('sig2Img');
     const hasSig1 = sig1Img && sig1Img.src && sig1Img.src.startsWith('data:image');
     const hasSig2 = sig2Img && sig2Img.src && sig2Img.src.startsWith('data:image');
 
-    // Place / Date (left side)
+    // PLACE OF INSPECTION + DATE — left-aligned, BELOW Remarks, ABOVE signatures
     doc.setFont(undefined, 'bold'); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
-    if (place)    doc.text(`PLACE: ${place}`, 14, y);
+    if (place)    doc.text(`PLACE OF INSPECTION: ${place}`, 14, y);
     if (signDate) doc.text(`DATE: ${signDate}`, 14, y + 6);
 
-    // Signature boxes: CLI-1 centered, CLI-2 right
-    // 70% of original 50x20 = 35x14
+    // Signature boxes:
+    // CLI-2 (Inspector 2 / cliName  / sig1Img) → LEFT side
+    // CLI-1 (Inspector 1 / cliName2 / sig2Img) → RIGHT side
     const sigW = 35, sigH = 14;
-    const cli1X = pageW / 2 - sigW / 2;   // centre
-    const cli2X = pageW - 14 - sigW;        // right
+    const sigY = y + 14;
+    const cli2X = 14;                        // CLI-2 LEFT side
+    const cli1X = pageW - 14 - sigW;         // CLI-1 RIGHT side
 
-    // Draw blue background behind signature areas (replaces white)
+    // Draw blue background behind signature areas
     doc.setFillColor(26, 35, 126);
-    if (hasSig1) doc.rect(cli1X, y, sigW, sigH, 'F');
-    if (hasSig2) doc.rect(cli2X, y, sigW, sigH, 'F');
+    if (hasSig1) doc.rect(cli2X, sigY, sigW, sigH, 'F');   // sig1Img = Inspector 2 = LEFT
+    if (hasSig2) doc.rect(cli1X, sigY, sigW, sigH, 'F');   // sig2Img = Inspector 1 = RIGHT
 
-    // Draw signature images ABOVE the CLI name line
+    // Draw signature images
     try {
-        if (hasSig1) doc.addImage(sig1Img.src, 'PNG', cli1X, y, sigW, sigH);
-        if (hasSig2) doc.addImage(sig2Img.src, 'PNG', cli2X, y, sigW, sigH);
+        if (hasSig1) doc.addImage(sig1Img.src, 'PNG', cli2X, sigY, sigW, sigH);  // CLI-2 LEFT
+        if (hasSig2) doc.addImage(sig2Img.src, 'PNG', cli1X, sigY, sigW, sigH);  // CLI-1 RIGHT
     } catch(e) {}
 
     // CLI names printed BELOW the signature images
-    const nameY = y + sigH + 4;
+    const nameY = sigY + sigH + 4;
     doc.setFont(undefined, 'bold'); doc.setFontSize(8); doc.setTextColor(0, 0, 0);
     if (cli1) {
-        doc.text('CLI-2:', cli1X, nameY);
+        // cli1 = cliName = Inspector 2 → LEFT
+        doc.text('CLI-2:', cli2X, nameY);
         const cli1Lines = doc.splitTextToSize(cli1, sigW);
-        doc.text(cli1Lines, cli1X, nameY + 5);
+        doc.text(cli1Lines, cli2X, nameY + 5);
     }
     if (cli2) {
-        doc.text('CLI-1:', cli2X, nameY);
+        // cli2 = cliName2 = Inspector 1 → RIGHT
+        doc.text('CLI-1:', cli1X, nameY);
         const cli2Lines = doc.splitTextToSize(cli2, sigW);
-        doc.text(cli2Lines, cli2X, nameY + 5);
+        doc.text(cli2Lines, cli1X, nameY + 5);
     }
 
     doc.save(`BrakeVan_Inspection_${new Date().toISOString().split('T')[0]}.pdf`);
     showMessage('📄 PDF generated and downloaded!', 'success');
+}
+
+
+// ── AUTO-SAVE (localStorage) ────────────────────────────────────
+const DRAFT_KEY = 'brakeVanDraft_v1';
+let autosaveTimer = null;
+
+function getDraftFields() {
+    // All text/date/time/select IDs to save
+    const ids = [
+        'formDate','trainNo','load','fromStation','toStation','bvNo','trainTime',
+        'arrTime','depTime','inspTime','inspStation','guardName','guardHQ','guardPF',
+        'cliName1','cliName2','signDate','otherRemarks','irregularities'
+    ];
+    const data = {};
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data[id] = el.value;
+    });
+    // Save all table inputs
+    document.querySelectorAll('table input, table select, table textarea').forEach(el => {
+        if (el.id) data[el.id] = el.value;
+        else if (el.name) data['n_' + el.name] = el.value;
+        else {
+            // use position-based key
+            const key = 'tbl_' + el.closest('td')?.cellIndex + '_' + el.closest('tr')?.rowIndex + '_' + el.closest('table')?.id;
+            data[key] = el.value;
+        }
+    });
+    return data;
+}
+
+function saveDraft(showIndicator = true) {
+    try {
+        const data = getDraftFields();
+        data._savedAt = new Date().toISOString();
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+        if (showIndicator) {
+            const dot = document.getElementById('autosaveDot');
+            const txt = document.getElementById('autosaveText');
+            dot.className = 'autosave-dot saved';
+            const t = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+            txt.textContent = '✅ Draft saved at ' + t;
+            setTimeout(() => {
+                dot.className = 'autosave-dot';
+                txt.textContent = 'Auto-save ON — changes saved automatically';
+            }, 2500);
+        }
+    } catch(e) { console.warn('Auto-save failed:', e); }
+}
+
+function loadDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        let restored = 0;
+        Object.keys(data).forEach(id => {
+            if (id === '_savedAt') return;
+            const el = document.getElementById(id);
+            if (el) { el.value = data[id]; restored++; }
+        });
+        // Restore table inputs by position key
+        document.querySelectorAll('table input, table select, table textarea').forEach(el => {
+            let key = null;
+            if (el.id && data[el.id] !== undefined) { el.value = data[el.id]; restored++; return; }
+            if (el.name && data['n_' + el.name] !== undefined) { el.value = data['n_' + el.name]; restored++; return; }
+            key = 'tbl_' + el.closest('td')?.cellIndex + '_' + el.closest('tr')?.rowIndex + '_' + el.closest('table')?.id;
+            if (data[key] !== undefined) { el.value = data[key]; restored++; }
+        });
+        // Resize textareas
+        ['otherRemarks','irregularities'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) autoResizeTextarea(el);
+        });
+        if (restored > 0) {
+            const savedAt = data._savedAt ? new Date(data._savedAt).toLocaleString('en-IN') : 'previously';
+            document.getElementById('autosaveText').textContent = '📂 Draft restored from ' + savedAt;
+            document.getElementById('autosaveDot').className = 'autosave-dot saved';
+            setTimeout(() => {
+                document.getElementById('autosaveDot').className = 'autosave-dot';
+                document.getElementById('autosaveText').textContent = 'Auto-save ON — changes saved automatically';
+            }, 4000);
+            return true;
+        }
+    } catch(e) { console.warn('Draft load failed:', e); }
+    return false;
+}
+
+function clearDraft() {
+    if (!confirm('Delete saved draft and reset the form to blank?')) return;
+    localStorage.removeItem(DRAFT_KEY);
+
+    // ── Reset all standard inputs, selects, textareas ──
+    const ids = [
+        'trainNo','load','slr','bpcNo','issued','brpPercent','locoNumber',
+        'inspectionSection','DepArr','lpName','alpName',
+        'irregularities','otherRemarks','place',
+        'cliNameOther','cliName2Other'
+    ];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+    // Reset select fields
+    ['allRightSignal','cliName','cliName2'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+    // Hide other-name boxes
+    document.getElementById('cliNameOtherBox').style.display = 'none';
+    document.getElementById('cliName2OtherBox').style.display = 'none';
+
+    // Reset date fields to today
+    const today = new Date().toISOString().split('T')[0];
+    ['formDate','signDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = today; });
+    ['issuedDate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+    // Reset crew table
+    document.querySelectorAll('#crewTable tbody input, #crewTable tbody select').forEach(el => { el.value = ''; });
+
+    // Reset inspection table to defaults
+    document.querySelectorAll('.status-input').forEach(inp => {
+        const sn = parseInt(inp.dataset.sn);
+        const item = inspectionItems.find(i => i.sn === sn);
+        inp.value = item ? item.defaultStatus : '';
+    });
+
+    // Reset textareas size
+    ['otherRemarks','irregularities'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.height = 'auto'; }
+    });
+
+    // Reset signature previews
+    ['sig1Preview','sig2Preview'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+    document.getElementById('autosaveDot').className = 'autosave-dot';
+    document.getElementById('autosaveText').textContent = 'Draft cleared — form reset to blank.';
+    setTimeout(() => {
+        document.getElementById('autosaveText').textContent = 'Auto-save ON — changes saved automatically';
+    }, 3000);
+    showMessage('🗑️ Draft cleared & form reset successfully!', 'success');
+}
+
+// ── OTHERS DROPDOWN TOGGLE ────────────────────────────────────────
+function setupOthersDropdown(selectId, boxId) {
+    const sel = document.getElementById(selectId);
+    const box = document.getElementById(boxId);
+    if (!sel || !box) return;
+    sel.addEventListener('change', () => {
+        box.style.display = sel.value === 'OTHERS' ? 'block' : 'none';
+        if (sel.value !== 'OTHERS') {
+            const inp = box.querySelector('input');
+            if (inp) inp.value = '';
+        }
+    });
+}
+
+// ── DATE FORMAT: DD/MM/YYYY display helpers ───────────────────────
+// Converts native date input (YYYY-MM-DD) value for PDF/display as DD/MM/YYYY
+function fmtDate(val) {
+    if (!val) return '';
+    const parts = val.split('-');
+    if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
+    return val;
+}
+// Show DD/MM/YYYY label next to each date input
+function setupDateLabels() {
+    ['formDate','signDate','issuedDate'].forEach(id => {
+        const inp = document.getElementById(id);
+        if (!inp) return;
+        // Create or find label span
+        let lbl = document.getElementById(id + '_fmt');
+        if (!lbl) {
+            lbl = document.createElement('span');
+            lbl.id = id + '_fmt';
+            lbl.style.cssText = 'font-size:11px;font-weight:bold;color:#1a237e;margin-left:6px;letter-spacing:0.3px;';
+            inp.parentNode.appendChild(lbl);
+        }
+        const update = () => { lbl.textContent = inp.value ? '📅 ' + fmtDate(inp.value) : ''; };
+        inp.addEventListener('change', update);
+        inp.addEventListener('input', update);
+        update();
+    });
+    // Crew date columns
+    document.querySelectorAll('#crewTable tbody input[type="date"]').forEach(inp => {
+        let lbl = inp.nextElementSibling;
+        if (!lbl || !lbl.classList.contains('date-fmt-lbl')) {
+            lbl = document.createElement('div');
+            lbl.className = 'date-fmt-lbl';
+            lbl.style.cssText = 'font-size:9px;font-weight:bold;color:#1a237e;margin-top:1px;';
+            inp.parentNode.insertBefore(lbl, inp.nextSibling);
+        }
+        const update = () => { lbl.textContent = inp.value ? fmtDate(inp.value) : ''; };
+        inp.addEventListener('change', update);
+        inp.addEventListener('input', update);
+        update();
+    });
+}
+
+
+function setupAutoSave() {
+    // Debounced save on every input/change
+    const trigger = () => {
+        clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(() => saveDraft(true), 800);
+    };
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', trigger);
+        el.addEventListener('change', trigger);
+    });
+    // Also save when user is about to leave
+    window.addEventListener('beforeunload', () => saveDraft(false));
+    // Periodic backup every 30 seconds
+    setInterval(() => saveDraft(false), 30000);
 }
 
 // ── SHOW MESSAGE ─────────────────────────────────────────────────
@@ -1161,8 +1436,12 @@ function autoResizeTextarea(el) {
 document.addEventListener('DOMContentLoaded', () => {
     buildInspectionTable();
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('formDate').value = today;
-    document.getElementById('signDate').value = today;
+    // Load draft first; only set today's date if no draft
+    const hasDraft = loadDraft();
+    if (!hasDraft) {
+        document.getElementById('formDate').value = today;
+        document.getElementById('signDate').value = today;
+    }
     ['otherRemarks','irregularities'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', () => autoResizeTextarea(el));
@@ -1172,6 +1451,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (t.matches('input[type="text"], textarea') && t.closest('td') && document.body.classList.contains('mobile-view'))
             handleInputFocus(e);
     }, true);
+    // Setup OTHERS dropdowns
+    setupOthersDropdown('cliName', 'cliNameOtherBox');
+    setupOthersDropdown('cliName2', 'cliName2OtherBox');
+    // Restore OTHERS visibility if draft loaded with OTHERS selected
+    ['cliName','cliName2'].forEach(id => {
+        const sel = document.getElementById(id);
+        const box = document.getElementById(id + 'OtherBox');
+        if (sel && box && sel.value === 'OTHERS') box.style.display = 'block';
+    });
+    // Setup DD/MM/YYYY display labels
+    setupDateLabels();
+    // Start auto-save after table is built
+    setupAutoSave();
 });
 </script>
 </body>
